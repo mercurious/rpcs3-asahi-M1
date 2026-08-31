@@ -30,11 +30,13 @@ surface earned its keep on day one (below).
 | **KDE-Wayland explicit-sync crash** | stock RPCS3 crashes creating its render window on Plasma-Wayland + Honeykrisp (`wp_linux_drm_syncobj`); XWayland workaround. |
 | **Sparse-reservation OOM** | Fedora's default overcommit refuses RPCS3's ~32 GiB VM reservation on 8 GB; `vm.overcommit_memory=1` fixes it. |
 | **Unified-memory VRAM budget** | RPCS3's 64 GB default `VRAM allocation limit` is a footgun on unified memory; cap it (see BUILDING §5.3). |
+| **Controller hidraw gap** | Asahi ships no controller `uaccess` rules, so the DualSense's `/dev/hidraw*` is root-only — breaking *both* RPCS3 pad handlers (native reads hidraw; SDL3 HIDAPI claims-then-fails, never falling back to the accessible evdev node). Fixed by `tools/70-dualsense.rules`; DualSense then works. |
+| **Resolution-Scale pink screen** | RPCS3's internal Resolution-Scale (%) upscale renders magenta on Honeykrisp — keep Scale at 100 % and lower the *base* resolution instead. |
 
 ## Status
 
-- **AfterBurner Climax** — playable, near console quality once the desktop is lean.
-- **GT5P** — boots to menu and into the dealership on Honeykrisp; heavy-scene VRAM tuning ongoing.
+- **AfterBurner Climax** — playable, near console quality once the desktop is lean; DualSense working (SDL handler + `tools/70-dualsense.rules`).
+- **GT5P** — boots to menu, dealership, and the car-purchase flow on Honeykrisp; heaviest transients hit the 8 GB-unified + desktop memory ceiling (`overcommit=1` + VRAM cap + 480p base res reach furthest; Resolution-Scale % pinks — use base res).
 - **GTHD** — boots; its heavy render configs vs. the unified-memory budget are still being balanced.
 
 A bench oracle, off the release path — for revalidating fork logic on a totally different GPU.

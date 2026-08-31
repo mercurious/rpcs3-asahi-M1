@@ -1,0 +1,13 @@
+# Sony DualSense (0ce6) and DualSense Edge (0df2): grant the active seat user raw
+# HID access. Asahi Fedora KDE ships no controller uaccess rules, so a pad's
+# /dev/hidraw* stays root:root 0600 -- which breaks BOTH RPCS3 pad handlers: the
+# native DualSense handler opens hidraw directly, and SDL3's HIDAPI driver claims
+# the pad then can't open hidraw and never falls back to the (accessible) evdev
+# node. This tags the pad's hidraw with uaccess so logind ACLs it to you.
+#
+#   sudo cp tools/70-dualsense.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules && sudo udevadm trigger
+#   # then unplug/replug the controller; verify: getfacl -p /dev/hidrawN | grep dave
+#
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", TAG+="uaccess"
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0df2", TAG+="uaccess"

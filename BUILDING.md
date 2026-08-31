@@ -117,6 +117,24 @@ For a track test, quit the desktop co-tenants first: `tools/etk-track-mode` quit
 Claude Desktop and hands the terminal to the resumed Claude Code CLI session, so RPCS3 gets the
 RAM the bare-metal rig gets for free.
 
+### 5.4 Controllers — grant hidraw access (DualSense et al.)
+
+Asahi Fedora KDE ships **no controller `uaccess` udev rules**, so a pad's raw HID node stays
+`root:root 0600` — which breaks *both* of RPCS3's pad handlers: the native DualSense handler
+opens `/dev/hidraw*` directly, and SDL3's HIDAPI driver *claims* the pad then fails to open
+hidraw and never falls back to the (uaccess-tagged, accessible) `event*` node. Kernel + evdev
+are fine; only hidraw is gated. Install the rule (DualSense `0ce6`, Edge `0df2`):
+
+```sh
+sudo cp tools/70-dualsense.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+# unplug/replug; verify:  getfacl -p /dev/hidrawN | grep dave   ->  user:dave:rw-
+```
+
+Then either handler works with full features. No-sudo stopgap: launch with
+`SDL_JOYSTICK_HIDAPI=0` and the **SDL** handler (forces the evdev path — buttons/sticks, no
+HIDAPI extras). Map **Options → Start** in the pad dialog (click the Start field, press Options).
+
 ## 6. Traps paid for — encode these, don't rediscover them
 
 1. `libxkbcommon-x11-devel` missing → fails at ~95 % on `basic_keyboard_handler.cpp`.
@@ -124,6 +142,9 @@ RAM the bare-metal rig gets for free.
 3. KDE-Wayland explicit sync → render-window crash before PPU compile. `QT_QPA_PLATFORM=xcb`.
 4. `overcommit_memory=0` → 32 GiB reservation refused → OOM at tiny RSS. Mode 1.
 5. Unified VRAM + the 64 GB default limit → GPU allocations eat all RAM. Cap the VRAM budget.
+6. Pad `/dev/hidraw*` is root-only (Asahi ships no controller `uaccess` rule) → both RPCS3
+   handlers fail to see the controller. Install `tools/70-dualsense.rules` (§5.4).
+7. Resolution-Scale (%) pinks the screen on Honeykrisp → keep it at 100 %, lower the base resolution.
 
 The paths in `tools/` (`rpcs3-gtk.desktop`, `etk-track-mode`) are for the reference machine
 (`/home/dave/rpcs3/build/bin/rpcs3`); adjust for your checkout.
