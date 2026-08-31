@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# etk-track-mode — lean track-test mode for the Asahi M1 garage host.
+#
+# On this 8 GB unified-memory box a track test needs the desktop co-tenants out
+# of the way — Honeykrisp's GPU allocations share the same RAM as the CPU side,
+# so RPCS3 competes with every Electron/Chromium renderer for the one pool.
+# This quits Firefox + Claude Desktop's stack, then hands THIS terminal to the
+# resumed Claude Code session so you never lose your place.
+#
+#   Run from a plain Konsole (not from inside a claude session).
+#   Reverse : Ctrl+D to leave the CLI, relaunch `claude-desktop`, reopen the chat.
+#   Options : ETK_KEEP_FIREFOX=1  keep Firefox open
+#             ETK_TRACK_DIR=/path override the project dir (default /home/dave/rpcs3)
+set -uo pipefail
+
+PROJECT_DIR="${ETK_TRACK_DIR:-/home/dave/rpcs3}"
+[ -t 1 ] || { echo "etk-track-mode: run this in an interactive terminal" >&2; exit 1; }
+
+cyan() { printf '\033[1;36m» %s\033[0m\n' "$*"; }
+mem()  { free -h | awk '/Mem:/{printf "   RAM  used %s | free %s | avail %s\n",$3,$4,$7}'; }
+
+cyan "entering track-mode — freeing desktop RAM"; mem
+
+cyan "asking Claude Desktop to quit…"
+pkill -TERM -f 'lib/claude-desktop/claude-desktop' 2>/dev/null || echo "   (not running)"
+if [ -z "${ETK_KEEP_FIREFOX:-}" ]; then
+    cyan "asking Firefox to quit (its session restores on next launch)…"
+    pkill -TERM -x firefox 2>/dev/null || echo "   (not running)"
+fi
+
+sleep 5
+# Electron frequently ignores SIGTERM; reap Desktop stragglers so the RAM is
+# actually returned (no unsaved state — the conversation lives on disk under
+# ~/.claude/projects). Firefox is left to finish its own graceful shutdown.
+pkill -KILL -f 'lib/claude-desktop/claude-desktop' 2>/dev/null && cyan "reaped a Claude Desktop straggler"
+
+cyan "freed:"; mem
+cyan "resuming Claude Code in $PROJECT_DIR — you're lean now. (Ctrl+D to exit.)"
+cd "$PROJECT_DIR" || { echo "etk-track-mode: cannot cd $PROJECT_DIR" >&2; exit 1; }
+exec claude --continue

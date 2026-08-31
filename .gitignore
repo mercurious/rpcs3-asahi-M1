@@ -1,0 +1,6 @@
+# binaries ship as release assets, never in git
+*.AppImage
+*.tar.zst
+*.tar.gz
+*.7z
+build/

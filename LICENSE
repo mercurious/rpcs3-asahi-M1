@@ -1,0 +1,23 @@
+# License
+
+This repository distributes a build of **RPCS3**, which is licensed under the
+**GNU General Public License v2.0** (upstream license:
+https://github.com/RPCS3/rpcs3/blob/master/LICENSE).
+
+Accordingly, everything in `patches/` is published under the **same GPL-2.0 terms**, and any
+binary produced by applying these patches is a derivative work of RPCS3 governed by that
+license. The corresponding source for the prerelease `linux_aarch64` binary is exactly:
+
+    upstream RPCS3 commit  c6e96729c   (v0.0.42, build 19895)
+      + patches/etk-rpcs3-gtk-edition-0.8.4-dev.patch
+      + patches/overlay-coalesce-notice.patch
+
+built per [`BUILDING.md`](BUILDING.md). See [`PROVENANCE.md`](PROVENANCE.md) for the sha256 and
+patch lineage.
+
+The GTK-Edition patch series originates in
+[etk-rpcs3-gtk](https://github.com/mercurious/etk-rpcs3-gtk) and carries its GPL-2.0 terms.
+
+Documentation and the helper scripts under `tools/` (`etk-track-mode`, `rpcs3-gtk.desktop`, the
+`99-rpcs3-overcommit.conf` sysctl drop-in) are © the ETK project, GPL-2.0 for single-license
+simplicity of this repository.

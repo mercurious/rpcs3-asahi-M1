@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=RPCS3 GTK Edition
+GenericName=PlayStation 3 Emulator
+Comment=RPCS3 ETK GTK Edition — native aarch64 build on Honeykrisp (Asahi)
+Icon=rpcs3
+TryExec=/home/dave/rpcs3/build/bin/rpcs3
+Exec=env QT_QPA_PLATFORM=xcb /home/dave/rpcs3/build/bin/rpcs3 %f
+Path=/home/dave/rpcs3
+Terminal=false
+Categories=Game;Emulator;
+Keywords=PS3;Playstation;RPCS3;ETK;emulator;
+StartupNotify=true
+StartupWMClass=rpcs3
